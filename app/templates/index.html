@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Todo List</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Todo List</h1>
+    <input type="text" id="todoTitle" placeholder="Enter todo title">
+    <button id="addTodo">Add Todo</button>
+    <ul id="todoList">
+        {% for todo in todos %}
+            <li data-id="{{ todo.id }}">
+                <span class="title">{{ todo.title }}</span>
+                <button class="delete">Delete</button>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <script>
+        $(document).ready(function() {
+            $('#addTodo').click(function() {
+                const title = $('#todoTitle').val();
+                if (title) {
+                    $.ajax({
+                        url: '/add',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ title: title }),
+                        success: function(todo) {
+                            $('#todoList').append(
+                                `<li data-id="${todo.id}">
+                                    <span class="title">${todo.title}</span>
+                                    <button class="delete">Delete</button>
+                                </li>`
+                            );
+                            $('#todoTitle').val('');
+                        }
+                    });
+                }
+            });
+
+            $('#todoList').on('click', '.delete', function() {
+                const id = $(this).closest('li').data('id');
+                $.ajax({
+                    url: `/delete/${id}`,
+                    method: 'DELETE',
+                    success: function() {
+                        $(`li[data-id=${id}]`).remove();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
